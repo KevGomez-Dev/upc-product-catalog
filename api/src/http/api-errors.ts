@@ -4,6 +4,7 @@ import {
   Catch,
   type ExceptionFilter,
   HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
@@ -46,6 +47,25 @@ const publicErrors: Record<number, ErrorDetails> = {
   },
 };
 
+function exceptionStatus(exception: unknown): number {
+  if (exception instanceof HttpException) return exception.getStatus();
+
+  // Express passes the body parser's error through Nest without wrapping it.
+  if (
+    exception instanceof Error &&
+    'type' in exception &&
+    exception.type === 'entity.too.large' &&
+    'status' in exception &&
+    exception.status === HttpStatus.PAYLOAD_TOO_LARGE &&
+    'statusCode' in exception &&
+    exception.statusCode === HttpStatus.PAYLOAD_TOO_LARGE
+  ) {
+    return HttpStatus.PAYLOAD_TOO_LARGE;
+  }
+
+  return HttpStatus.INTERNAL_SERVER_ERROR;
+}
+
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(ApiExceptionFilter.name);
@@ -53,8 +73,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
   constructor(private readonly adapterHost: HttpAdapterHost) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const statusCode =
-      exception instanceof HttpException ? exception.getStatus() : 500;
+    const statusCode = exceptionStatus(exception);
     const requestId = randomUUID();
     let details: ErrorDetails;
 

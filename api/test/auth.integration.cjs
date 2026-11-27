@@ -1,4 +1,5 @@
 require('reflect-metadata');
+const { Buffer } = require('node:buffer');
 const { randomBytes } = require('node:crypto');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
@@ -259,6 +260,50 @@ test('el DTO rechaza tipos, campos faltantes, longitudes y propiedades ajenas', 
     expect(JSON.stringify(error)).not.toContain(admin.password);
   }
 });
+
+test.each([
+  [102399, 400, 'VALIDATION_ERROR'],
+  [102400, 400, 'VALIDATION_ERROR'],
+  [102401, 413, 'PAYLOAD_TOO_LARGE'],
+  [112640, 413, 'PAYLOAD_TOO_LARGE'],
+])(
+  'procesa un JSON de %i bytes con HTTP %i y código %s',
+  async (bytes, status, code) => {
+    const marker = 'sensitive parser fixture';
+    const envelope = JSON.stringify({ username: 'fixture', password: marker });
+    const data = envelope.replace(
+      marker,
+      marker + 'x'.repeat(bytes - Buffer.byteLength(envelope)),
+    );
+    expect(Buffer.byteLength(data)).toBe(bytes);
+
+    const logging = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => {});
+    try {
+      const response = await http.post('/auth/login').type('json').send(data);
+      const error = expectError(response, status, code);
+      expect(response.headers['cache-control']).toBe('no-store');
+      expect(response.text).not.toContain(marker);
+      expect(logging).not.toHaveBeenCalled();
+
+      if (status === 400) {
+        expect(error.fieldErrors).toEqual({
+          password: ['La contraseña debe tener entre 1 y 256 caracteres.'],
+        });
+      } else {
+        expect(error).toEqual({
+          statusCode: 413,
+          code: 'PAYLOAD_TOO_LARGE',
+          message: 'El cuerpo de la solicitud supera el límite.',
+          requestId: expect.any(String),
+        });
+      }
+    } finally {
+      logging.mockRestore();
+    }
+  },
+);
 
 test('el JSON inválido produce 400 controlado sin repetir el cuerpo', async () => {
   const response = await http

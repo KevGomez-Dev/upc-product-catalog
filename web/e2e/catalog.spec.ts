@@ -366,6 +366,94 @@ test('el adaptador limita JSON antes de iniciar la autenticación', async ({
   expect((await malformed.json()).code).toBe('BAD_REQUEST');
 });
 
+test('Nest y Next aplican el mismo límite de 100 KiB y conservan el contrato de error', async ({
+  request,
+  baseURL,
+}) => {
+  const nestOrigin = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
+  const fixtures = [
+    [102399, 400, 'VALIDATION_ERROR'],
+    [102400, 400, 'VALIDATION_ERROR'],
+    [102401, 413, 'PAYLOAD_TOO_LARGE'],
+    [112640, 413, 'PAYLOAD_TOO_LARGE'],
+  ] as const;
+
+  const marker = 'sensitive parser fixture';
+  const envelope = JSON.stringify({ username: 'fixture', password: marker });
+  for (const [bytes, status, code] of fixtures) {
+    const data = envelope.replace(
+      marker,
+      marker + 'x'.repeat(bytes - Buffer.byteLength(envelope)),
+    );
+    expect(Buffer.byteLength(data)).toBe(bytes);
+
+    const headers = { 'Content-Type': 'application/json' };
+    const responses = await Promise.all([
+      request.post(new URL('/auth/login', nestOrigin).href, { data, headers }),
+      request.post('/api/session', {
+        data,
+        headers: { ...headers, Origin: new URL(baseURL!).origin },
+      }),
+    ]);
+    for (const response of responses) {
+      expect(response.status(), `${response.url()} con ${bytes} bytes`).toBe(
+        status,
+      );
+      const { requestId, ...error } = await response.json();
+      expect(requestId).toMatch(/^[0-9a-f-]{36}$/);
+      expect(await response.text()).not.toContain(marker);
+      if (status === 413) {
+        expect(error).toEqual({
+          statusCode: 413,
+          code,
+          message: 'El cuerpo de la solicitud supera el límite.',
+        });
+      } else {
+        expect(error).toMatchObject({
+          statusCode: 400,
+          code,
+          fieldErrors: {
+            password: ['La contraseña debe tener entre 1 y 256 caracteres.'],
+          },
+        });
+      }
+    }
+  }
+});
+
+test('Chrome encuentra y decodifica el favicon del catálogo', async ({
+  page,
+  request,
+}) => {
+  const failures: string[] = [];
+  page.on('pageerror', (error) => failures.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') failures.push(message.text());
+  });
+  page.on('requestfailed', (failed) => failures.push(failed.url()));
+  page.on('response', (response) => {
+    if (response.status() >= 400) failures.push(response.url());
+  });
+
+  const direct = await request.get('/favicon.ico');
+  expect(direct.status()).toBe(200);
+  expect(direct.headers()['content-type']).toMatch(
+    /^image\/(?:x-icon|vnd\.microsoft\.icon)/,
+  );
+
+  await page.goto('/login');
+  const icon = page.locator('link[rel="icon"]');
+  await expect(icon).toHaveAttribute('href', /^\/favicon\.ico(?:\?|$)/);
+  const dimensions = await icon.evaluate(async (link: HTMLLinkElement) => {
+    const image = new Image();
+    image.src = link.href;
+    await image.decode();
+    return [image.naturalWidth, image.naturalHeight];
+  });
+  expect(dimensions).toEqual([32, 32]);
+  expect(failures).toEqual([]);
+});
+
 test('el navegador vuelve al login con un JWT firmado pero vencido', async ({
   page,
   context,
