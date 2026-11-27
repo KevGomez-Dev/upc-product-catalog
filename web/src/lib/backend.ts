@@ -79,15 +79,46 @@ export function forward(response: Response) {
   return new NextResponse(response.body, { status: response.status, headers });
 }
 
-export async function readJson(request: Request): Promise<string | null> {
-  if (
-    request.headers.get('content-type')?.split(';')[0].trim() !==
-    'application/json'
-  )
-    return null;
+const maximumJsonBytes = 100 * 1024;
+
+export async function readJson(
+  request: Request,
+): Promise<string | NextResponse> {
+  const invalid = () =>
+    problem(400, 'BAD_REQUEST', 'Envía los datos como JSON.');
+  const mediaType = request.headers
+    .get('content-type')
+    ?.split(';')[0]
+    .trim()
+    .toLowerCase();
+  if (mediaType !== 'application/json' || !request.body) return invalid();
+
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let bytes = 0;
+  let body = '';
   try {
-    return JSON.stringify(await request.json());
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      bytes += chunk.value.byteLength;
+      if (bytes > maximumJsonBytes) {
+        void reader.cancel().catch(() => {});
+        return problem(
+          413,
+          'PAYLOAD_TOO_LARGE',
+          'El cuerpo de la solicitud supera el límite.',
+        );
+      }
+      body += decoder.decode(chunk.value, { stream: true });
+    }
+    body += decoder.decode();
+    JSON.parse(body);
+    return body;
   } catch {
-    return null;
+    void reader.cancel().catch(() => {});
+    return invalid();
+  } finally {
+    reader.releaseLock();
   }
 }

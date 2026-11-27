@@ -4,7 +4,6 @@ import {
   forward,
   originProblem,
   privateHeaders,
-  problem,
   readJson,
   unavailable,
 } from '../../../lib/backend';
@@ -14,8 +13,7 @@ export async function POST(request: Request) {
   const denied = originProblem(request);
   if (denied) return denied;
   const body = await readJson(request);
-  if (body === null)
-    return problem(400, 'BAD_REQUEST', 'Envía los datos como JSON.');
+  if (typeof body !== 'string') return body;
   try {
     const result = await backend('/auth/login', { method: 'POST', body });
     if (!result.ok) return forward(result);

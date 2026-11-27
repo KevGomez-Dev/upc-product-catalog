@@ -50,8 +50,7 @@ async function handle(method: Method, request: Request, context: Context) {
   let body: string | undefined;
   if (method === 'POST' || method === 'PUT') {
     const json = await readJson(request);
-    if (json === null)
-      return problem(400, 'BAD_REQUEST', 'Envía los datos como JSON.');
+    if (typeof json !== 'string') return json;
     body = json;
   }
   try {
