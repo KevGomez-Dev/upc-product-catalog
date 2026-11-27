@@ -266,15 +266,19 @@ test('la edición conserva el alta histórica y atribuye la modificación al adm
   expect((await get(`/products/${id}`).expect(200)).body).toEqual(edited.body);
 });
 
-test('la edición no retrocede una fecha histórica posterior al reloj del servidor', async () => {
+test('la edición con auditoría futura da 409 y conserva toda la fila', async () => {
   const { id } = await importedProduct();
   await database.query('UPDATE products SET updated_date = $1 WHERE id = $2', [
     '2100-01-01T00:00:00Z',
     id,
   ]);
-  const response = await put(id, payload).expect(200);
-  expect(response.body.updatedDate).toBe('2100-01-01T00:00:00Z');
-  expect(response.body.modifiedBy).toBe('admin@prueba.local');
+  const before = await database.query('SELECT * FROM products WHERE id = $1', [
+    id,
+  ]);
+  expectError(await put(id, payload), 409, 'AUDIT_DATE_CONFLICT');
+  expect(
+    await database.query('SELECT * FROM products WHERE id = $1', [id]),
+  ).toEqual(before);
 });
 
 test('manager recibe 403 en las tres escrituras y el producto queda intacto', async () => {

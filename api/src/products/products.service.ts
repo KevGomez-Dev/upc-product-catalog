@@ -135,22 +135,40 @@ export class ProductsService {
   async update(id: number, input: ProductWriteDto, actor: AuthenticatedUser) {
     const subcategory = await this.catalog.resolveSubcategory(input);
     const { username } = await this.auth.me(actor);
-    const result = await this.products
-      .createQueryBuilder()
-      .update()
-      .set({
-        upcCode: input.upcCode,
-        upcDescription: input.upcDescription,
-        subcategoryId: subcategory.id,
-        updatedDate: () => `GREATEST("updated_date", ${databaseTime()})`,
-        modifiedBy: username,
-      })
-      .where({ id })
-      .returning(returnedFields)
-      .execute()
+    // Lock the candidate before reading the edit clock and decide the outcome
+    // in the same statement, including when no update is possible.
+    const [row] = await this.products
+      .query<
+        Array<{ found: boolean; id: null } | (WrittenProduct & { found: true })>
+      >(
+        `
+      WITH target AS MATERIALIZED (
+        SELECT id, updated_date FROM products WHERE id = $1 FOR UPDATE
+      ), edit_clock AS MATERIALIZED (
+        SELECT date_trunc('second', clock_timestamp()) AS edited_at FROM target
+      ), written AS (
+        UPDATE products AS p
+        SET upc_code = $2, upc_description = $3, subcategory_id = $4,
+            modified_by = $5, updated_date = edit_clock.edited_at
+        FROM target, edit_clock
+        WHERE p.id = target.id AND target.updated_date <= edit_clock.edited_at
+        RETURNING p.id, p.upc_code, p.upc_description, p.date_added,
+                  p.updated_date, p.added_by, p.modified_by
+      )
+      SELECT (target.id IS NOT NULL) AS found, written.*
+      FROM (SELECT 1) AS anchor LEFT JOIN target ON TRUE LEFT JOIN written ON TRUE
+      `,
+        [id, input.upcCode, input.upcDescription, subcategory.id, username],
+      )
       .catch(handleProductWriteError);
-    const [row] = result.raw as WrittenProduct[];
-    if (!row) throw notFound();
+    if (!row.found) throw notFound();
+    if (row.id === null) {
+      throw new ApiException(409, {
+        code: 'AUDIT_DATE_CONFLICT',
+        message:
+          'La fecha histórica de modificación es posterior al reloj del servidor.',
+      });
+    }
     return writtenDetail(row, subcategory);
   }
 
