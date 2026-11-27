@@ -87,3 +87,8 @@ Proyección aprobada para HU-01: 106 productos, 1 duplicado exacto vinculado, 13
 - **Aprobado por el candidato tras revisar la auditoría con ChatGPT.** Se aceptan las correcciones de seguridad y las pruebas unitarias adicionales. [Solicitud de cierre](prompts/09-cierre.md) · [Auditoría y evidencias](planes/08-auditoria-final.md)
 - **Aceptado por el candidato.** Se conservan las dependencias actuales y el lockfile con los avisos moderados y sus límites de exposición documentados. Se conserva también el historial incremental, incluidos los ZIP históricos, tras la revisión de secretos. El ZIP de frontend queda fuera del árbol de entrega.
 - **Alcance final.** La matriz conserva las adaptaciones del enunciado y el README mantiene los límites del entorno local. El candidato conserva el control del commit, el push y la publicación. [Matriz de aceptación](../docs/criterios-de-aceptacion.md) · [README](../README.md)
+
+## Correcciones de QA y regresión
+
+- **Autorizado por el candidato tras revisar el QA con ChatGPT.** Limitar la corrección al 413 de Nest y al favicon. Conservar el límite de 100 KiB, las dependencias y el pipeline predeterminado con Turbopack. [Prompt de fase 10](prompts/10-correcciones-qa.md)
+- **Implementado por Codex, pendiente de revisión del candidato.** Reconocer en el filtro global el error de tamaño de Express por tipo y estados 413. Reutilizar el contrato público de error y su identificador de solicitud. Usar `app/favicon.ico` con el código de barras y el azul de la marca existente. [Causas y verificación](planes/10-correcciones-qa.md)

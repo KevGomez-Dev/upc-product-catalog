@@ -1,6 +1,6 @@
 # Matriz de aceptación
 
-La matriz sigue las secciones 4 a 10 del enunciado original. [PDF de la prueba](../PruebaTecnica_Productos_UPC.pdf) **Cumplido** indica que el comportamiento solicitado existe. **Adaptado** indica que el objetivo se cumple con el mecanismo distinto y justificado que se describe. La [auditoría final](../ia/planes/08-auditoria-final.md) registra las ejecuciones verificadas.
+La matriz sigue las secciones 4 a 10 del enunciado original. [PDF de la prueba](../PruebaTecnica_Productos_UPC.pdf) **Cumplido** indica que el comportamiento solicitado existe. **Adaptado** indica que el objetivo se cumple con el mecanismo distinto y justificado que se describe. La [auditoría final](../ia/planes/08-auditoria-final.md) y la [regresión de QA](../ia/planes/10-correcciones-qa.md) registran las ejecuciones verificadas.
 
 | Historia  | Criterio                                                             | Implementación                                                                                                        | Evidencia                                                           | Estado                                                             |
 | --------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------ |

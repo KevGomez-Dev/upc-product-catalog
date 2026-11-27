@@ -84,7 +84,7 @@ npm exec -w web -- playwright install chromium
 E2E_JWT_SECRET="$(node --env-file=.env -p 'process.env.JWT_SECRET')" npm run test:e2e -w web
 ```
 
-`validate` ejecuta lint, formato, builds, tipos y pruebas unitarias de Jest. La integración crea esquemas temporales en una instancia de PostgreSQL de pruebas. Playwright requiere API y web en marcha con los 106 productos iniciales, y ejecuta el caso de vencimiento con el secreto local de esa instancia. Si ya tienes Chrome, puedes omitir la descarga de Chromium y definir `E2E_BROWSER_CHANNEL=chrome`. Reinicia solo la API de pruebas antes de repetir Playwright si su caso de rate limiting conserva el cupo agotado.
+`validate` ejecuta lint, formato, builds, tipos y pruebas unitarias de Jest. La integración crea esquemas temporales en una instancia de PostgreSQL de pruebas. Playwright requiere API y web en marcha con los 106 productos iniciales, y ejecuta el caso de vencimiento con el secreto local de esa instancia. Si ya tienes Chrome, puedes omitir la descarga de Chromium y definir `E2E_BROWSER_CHANNEL=chrome`. Si usas puertos de pruebas alternativos, configura `E2E_BASE_URL` para Next y `E2E_API_BASE_URL` para Nest. Reinicia solo la API de pruebas antes de repetir Playwright si su caso de rate limiting conserva el cupo agotado.
 
 ## Decisiones y límites
 
@@ -93,7 +93,7 @@ E2E_JWT_SECRET="$(node --env-file=.env -p 'process.env.JWT_SECRET')" npm run tes
 - Nest determina los autores y las fechas. Los errores incluyen un código y un ID de solicitud, con información de campo cuando procede. El catálogo web pagina localmente sobre el listado completo y el checksum se informa como aviso.
 - El rate limiting en memoria se comparte entre clientes que llegan desde la misma instancia local de Next. La sesión emitida vive hasta su vencimiento de una hora por defecto. El entorno auditado es local.
 
-Consulta el [enunciado original](PruebaTecnica_Productos_UPC.pdf), la [matriz de aceptación](docs/criterios-de-aceptacion.md), la [auditoría final](ia/planes/08-auditoria-final.md) y la [documentación de IA](ia/README.md).
+Consulta el [enunciado original](PruebaTecnica_Productos_UPC.pdf), la [matriz de aceptación](docs/criterios-de-aceptacion.md), la [auditoría final](ia/planes/08-auditoria-final.md), la [regresión de QA](ia/planes/10-correcciones-qa.md) y la [documentación de IA](ia/README.md).
 
 ## Capturas
 
