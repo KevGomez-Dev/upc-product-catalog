@@ -1,14 +1,7 @@
 # Uso de inteligencia artificial
 
-## Herramientas utilizadas
+- **ChatGPT** apoyó la revisión de requisitos, la evaluación de alternativas y la revisión técnica informada por el candidato. Los extractos disponibles están reproducidos con su atribución y contexto. [Conversaciones](conversaciones/chatgpt.md)
+- **Codex** contrastó el enunciado y el CSV, propuso planes, implementó los cambios autorizados y ejecutó pruebas. Las evidencias registran condiciones, resultados y límites de la verificación. [Auditoría final](planes/08-auditoria-final.md)
+- **Candidato** definió el alcance de cada fase, revisó las propuestas y aprobó o modificó las decisiones identificadas en los prompts. [Decisiones](decisiones.md)
 
-- **ChatGPT:** análisis de requisitos, planificación, evaluación de alternativas y revisión técnica.
-- **OpenAI Codex:** análisis del proyecto, asistencia en la implementación y ejecución de pruebas.
-
-## Metodología
-
-El desarrollo se realizará de manera incremental, utilizando inteligencia artificial como herramienta de asistencia.
-
-Las propuestas generadas serán revisadas y validadas por el desarrollador, quien será responsable de las decisiones técnicas finales.
-
-Durante el desarrollo se documentarán los prompts, planes, extractos relevantes de conversaciones y decisiones técnicas, incluyendo las propuestas aceptadas, modificadas y descartadas, junto con sus respectivas justificaciones.
+Se trabajó por incrementos y cada fase quedó en revisión antes de continuar. Se conservan los [prompts originales](prompts/) y los [planes históricos](planes/). Los estados históricos de las decisiones se enlazan con la aprobación, sustitución o propuesta posterior. Los extractos reproducen texto aportado en esta conversación.

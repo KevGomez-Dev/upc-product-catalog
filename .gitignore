@@ -66,3 +66,7 @@ temp/
 
 # Deployment
 .vercel/
+
+# Local handoff archives
+/api.zip
+/web.zip
