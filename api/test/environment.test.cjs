@@ -12,6 +12,7 @@ const testDatabaseUrl = 'postgresql://test:test@localhost:5432/catalog_test';
 test('usa los puertos y el vencimiento documentados por defecto', () => {
   const config = readApiEnvironment({ JWT_SECRET: validSecret });
   assert.equal(config.port, 3000);
+  assert.equal(config.host, '127.0.0.1');
   assert.equal(config.jwtExpiresInSeconds, 3600);
 });
 
@@ -20,8 +21,10 @@ test('acepta un puerto y un vencimiento de entorno explícitos', () => {
     JWT_SECRET: validSecret,
     JWT_EXPIRES_IN: '15m',
     API_PORT: '3100',
+    API_HOST: '0.0.0.0',
   });
   assert.equal(config.port, 3100);
+  assert.equal(config.host, '0.0.0.0');
   assert.equal(config.jwtExpiresInSeconds, 900);
 });
 
@@ -30,6 +33,10 @@ test('rechaza un secreto faltante o de ejemplo y valores inválidos', () => {
   assert.throws(
     () => readApiEnvironment({ JWT_SECRET: 'cambia-este-secreto' }),
     /JWT_SECRET/,
+  );
+  assert.throws(
+    () => readApiEnvironment({ JWT_SECRET: validSecret, API_HOST: 'bad host' }),
+    /API_HOST/,
   );
   for (const API_PORT of ['0', '65536', '1e3', '3000.5']) {
     assert.throws(

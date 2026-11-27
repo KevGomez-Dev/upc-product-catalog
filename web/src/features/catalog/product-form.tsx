@@ -203,6 +203,9 @@ function ProductForm({ product }: { product?: ProductDetail }) {
         <label htmlFor="upcCode">UPC</label>
         <input
           {...fieldProps('upcCode')}
+          aria-describedby={
+            errors.upcCode?.length ? 'upc-help upcCode-error' : 'upc-help'
+          }
           className="upc"
           type="text"
           inputMode="numeric"
@@ -210,6 +213,9 @@ function ProductForm({ product }: { product?: ProductDetail }) {
           onChange={(event) => change('upcCode', event.target.value)}
           placeholder="12 dígitos"
         />
+        <p id="upc-help" className="field-help">
+          El UPC debe contener exactamente 12 dígitos. Puede comenzar con cero.
+        </p>
         {fieldError('upcCode')}
       </div>
       <div className="form-field">

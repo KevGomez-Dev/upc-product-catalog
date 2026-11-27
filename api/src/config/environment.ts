@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { isIP } from 'node:net';
 import { resolve } from 'node:path';
 import { loadEnvFile } from 'node:process';
 
@@ -31,6 +32,11 @@ export function readDatabaseUrl(env: NodeJS.ProcessEnv): string {
 }
 
 export function readApiEnvironment(env: NodeJS.ProcessEnv) {
+  const host = env.API_HOST ?? '127.0.0.1';
+  if (!isIP(host)) {
+    throw new Error('API_HOST debe ser una dirección IP IPv4 o IPv6.');
+  }
+
   const rawPort = env.API_PORT ?? '3000';
   const port = Number(rawPort);
   if (!/^\d+$/.test(rawPort) || port < 1 || port > 65535) {
@@ -60,5 +66,5 @@ export function readApiEnvironment(env: NodeJS.ProcessEnv) {
     );
   }
 
-  return { port, jwtSecret, jwtExpiresInSeconds };
+  return { host, port, jwtSecret, jwtExpiresInSeconds };
 }

@@ -1,0 +1,12 @@
+**
+!package.json
+!package-lock.json
+!api/
+!api/Dockerfile
+!api/package.json
+!api/tsconfig.json
+!api/nest-cli.json
+!api/src/
+!api/src/**
+!web/
+!web/package.json

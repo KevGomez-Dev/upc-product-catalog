@@ -6,10 +6,10 @@ import { loadLocalEnvironment, readApiEnvironment } from './config/environment';
 
 async function bootstrap(): Promise<void> {
   loadLocalEnvironment();
-  const { port } = readApiEnvironment(process.env);
+  const { host, port } = readApiEnvironment(process.env);
   const app = await NestFactory.create(AppModule, { abortOnError: false });
   app.enableShutdownHooks();
-  await app.listen(port, '127.0.0.1');
+  await app.listen(port, host);
 }
 
 void bootstrap().catch((error: unknown) => {

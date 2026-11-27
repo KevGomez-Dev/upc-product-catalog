@@ -358,3 +358,9 @@ test('limita intentos por IP sin confiar en X-Forwarded-For del cliente', async 
   expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0);
   await http.get('/auth/me').auth(sign(), { type: 'bearer' }).expect(200);
 });
+
+test('GET /health consulta PostgreSQL sin token y devuelve solo estados públicos', async () => {
+  const response = await http.get('/health').expect(200);
+  expect(response.headers['cache-control']).toBe('no-store');
+  expect(response.body).toEqual({ status: 'ok', api: 'up', database: 'up' });
+});

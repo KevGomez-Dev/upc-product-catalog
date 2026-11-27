@@ -52,6 +52,57 @@ test('admin inicia sesión, consulta, crea, edita y confirma o cancela el borrad
   await expect(page.getByText('106 productos')).toBeVisible();
   await capture(page, '02-catalogo-admin.png');
 
+  await expect(page.locator('tbody tr')).toHaveCount(20);
+  for (let current = 2; current <= 6; current++) {
+    await page.getByRole('button', { name: 'Siguiente' }).click();
+    await expect(page.getByText(`Página ${current} de 6`)).toBeVisible();
+  }
+  await expect(page.locator('tbody tr')).toHaveCount(6);
+  await expect(page.getByRole('button', { name: 'Siguiente' })).toBeDisabled();
+  await page.getByLabel('Categoría', { exact: true }).selectOption('BEB');
+  await expect(page.getByRole('button', { name: 'Anterior' })).toBeDisabled();
+  await page.getByLabel('Categoría', { exact: true }).selectOption('');
+
+  const firstRow = page.locator('tbody tr').first();
+  await firstRow.getByRole('link').first().focus();
+  await page.keyboard.press('Tab');
+  await expect(firstRow.getByRole('link', { name: /^Editar / })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(
+    firstRow.getByRole('button', { name: /^Eliminar / }),
+  ).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }),
+  ).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(
+    firstRow.getByRole('button', { name: /^Eliminar / }),
+  ).toBeFocused();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const card = page
+    .getByRole('list', { name: 'Productos', exact: true })
+    .getByRole('listitem')
+    .first();
+  for (const field of [
+    'UPC',
+    'Categoría',
+    'Subcategoría',
+    'Fecha de alta',
+    'Última modificación',
+  ]) {
+    await expect(card.getByText(field, { exact: true })).toBeVisible();
+  }
+  await expect(card.getByRole('link', { name: /^Editar / })).toBeVisible();
+  await card.getByRole('button', { name: /^Eliminar / }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Cancelar' })
+    .click();
+  await capture(page, '06-catalogo-admin-movil.png');
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   const cookie = (await context.cookies()).find(
     ({ name }) => name === 'upc_session',
   );
@@ -86,6 +137,9 @@ test('admin inicia sesión, consulta, crea, edita y confirma o cancela el borrad
 
   const save = page.getByRole('button', { name: 'Guardar producto' });
   const upc = page.getByLabel('UPC', { exact: true });
+  await expect(upc).toHaveAccessibleDescription(
+    /exactamente 12 dígitos.*comenzar con cero/,
+  );
   const category = page.getByLabel('Categoría', { exact: true });
   const subcategory = page.getByLabel('Subcategoría', { exact: true });
   await expect(subcategory).toBeDisabled();
@@ -143,6 +197,7 @@ test('admin inicia sesión, consulta, crea, edita y confirma o cancela el borrad
       }),
     ).toBeVisible();
     await expect(page.getByText('107 productos')).toBeVisible();
+    await page.getByRole('searchbox', { name: 'Buscar' }).fill(name);
 
     await page.getByRole('link', { name: `Editar ${name}` }).click();
     await expect(upc).toHaveValue('012345678906');
@@ -151,6 +206,7 @@ test('admin inicia sesión, consulta, crea, edita y confirma o cancela el borrad
     await page.getByLabel('Descripción').fill(edited);
     await save.click();
     await expect(page.getByText('Producto actualizado.')).toBeVisible();
+    await page.getByRole('searchbox', { name: 'Buscar' }).fill(edited);
     await expect(
       page.getByRole('link', { name: edited, exact: true }),
     ).toBeVisible();
@@ -169,6 +225,7 @@ test('admin inicia sesión, consulta, crea, edita y confirma o cancela el borrad
     await deleteButton.click();
     await dialog.getByRole('button', { name: 'Eliminar producto' }).click();
     await expect(page.getByText('Producto eliminado.')).toBeVisible();
+    await page.getByRole('searchbox', { name: 'Buscar' }).fill('');
     await expect(page.getByText('106 productos')).toBeVisible();
     await expect(
       page.getByRole('link', { name: edited, exact: true }),
