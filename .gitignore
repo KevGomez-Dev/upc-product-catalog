@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Build artifacts
+dist/
+build/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+
+# Testing and coverage
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database and local persistence
+postgres-data/
+pgdata/
+*.sqlite
+*.sqlite3
+*.dump
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.history/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files and cache
+tmp/
+temp/
+.cache/
+*.tmp
+
+# Local AI tool configuration
+.codex/
+.claude/
+.cursor/
+
+# Deployment
+.vercel/
