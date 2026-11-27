@@ -1,6 +1,6 @@
 # Prueba Técnica – Catálogo de Productos UPC
 
-Las instrucciones completas están en **`PruebaTecnica_Productos_UPC.pdf`**. Este README solo explica cómo levantar la base de datos.
+Las instrucciones completas están en **`PruebaTecnica_Productos_UPC.pdf`**. Este README explica cómo iniciar el catálogo en un entorno local de evaluación.
 
 ## Contenido del paquete
 
@@ -44,3 +44,34 @@ docker compose down -v     # elimina el contenedor y los datos
 ```
 
 > Puedes copiar este `docker-compose.yml` a tu repositorio y extenderlo.
+
+## Iniciar el catálogo
+
+Usa Node.js 22. Crea `.env` a partir de `.env.example` y sustituye el marcador de `JWT_SECRET` por un valor aleatorio de al menos 32 bytes, por ejemplo uno generado con `openssl rand -hex 32`. Después ejecuta desde la raíz:
+
+```bash
+npm ci
+docker compose up -d --wait db
+npm run migration:run -w api
+npm run catalog:import -w api -- load
+npm run dev
+```
+
+Abre [el catálogo local](http://127.0.0.1:3001). NestJS escucha en el puerto 3000. Las cuentas de demostración son:
+
+| Usuario | Contraseña demo | Permisos |
+| --- | --- | --- |
+| `admin@prueba.local` | `Admin123!` | Consultar, crear, editar y eliminar |
+| `manager@prueba.local` | `Manager123!` | Consultar |
+
+Si cambias los puertos u origen web, usa `web/.env.example` como referencia para `web/.env.local`. `WEB_ORIGIN` debe coincidir con el origen exacto que abre el navegador. Next usa ese origen para validar mutaciones y establece `Secure` en la cookie cuando es HTTPS. El secreto JWT pertenece exclusivamente a la API.
+
+El importador conserva 120 filas y proyecta 106 productos en una base limpia. Puedes consultar el diagnóstico antes de escribir con `npm run catalog:import -w api -- inspect`. Repetir la carga del mismo archivo reutiliza el lote.
+
+## Verificación local
+
+- `npm run validate` ejecuta lint, formato, compilación, chequeo de tipos y pruebas unitarias.
+- `npm run test:integration` usa `TEST_DATABASE_URL` y esquemas temporales en PostgreSQL.
+- `npm run test:e2e -w web` verifica los flujos en Playwright con la aplicación en marcha y una base de prueba recién cargada. Instala Chromium con `npm exec -w web -- playwright install chromium` o usa Chrome instalado con `E2E_BROWSER_CHANNEL=chrome`. El caso de JWT vencido requiere que `E2E_JWT_SECRET` coincida con el secreto del backend de prueba.
+
+El límite de login en memoria cuenta por IP de conexión a NestJS. Las solicitudes que pasan por una misma instancia local de Next comparten ese límite. El adaptador no reenvía cabeceras de identificación de IP del cliente.
