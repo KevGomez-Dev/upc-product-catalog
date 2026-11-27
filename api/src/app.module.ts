@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { ApiExceptionFilter } from './http/api-errors';
 import { createValidationPipe } from './http/validation';
 import { databaseOptions } from './database/database-options';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { databaseOptions } from './database/database-options';
       }),
     }),
     AuthModule,
+    ProductsModule,
   ],
   providers: [
     { provide: APP_PIPE, useFactory: createValidationPipe },

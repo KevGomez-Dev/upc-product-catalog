@@ -9,6 +9,7 @@ import type {
   ReviewedRow,
   SourceRow,
 } from './import.types';
+import { hasValidUpcCheckDigit, isUpc } from '../upc';
 import { fieldCount, readCatalogCsv } from './read-csv';
 
 function parseUtcSeconds(value: string): Date | undefined {
@@ -27,18 +28,6 @@ function parseUtcSeconds(value: string): Date | undefined {
     return undefined;
   }
   return date;
-}
-
-function validUpc(value: string): boolean {
-  return /^[0-9]{12}$/.test(value);
-}
-
-function hasValidCheckDigit(upc: string): boolean {
-  const sum = Array.from(upc).reduce(
-    (total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 3 : 1),
-    0,
-  );
-  return sum % 10 === 0;
 }
 
 function reviewRow(source: SourceRow, observed: Set<string>): ReviewedRow {
@@ -80,9 +69,9 @@ function reviewRow(source: SourceRow, observed: Set<string>): ReviewedRow {
       after: upcCode,
     });
   }
-  if (!validUpc(upcCode)) {
+  if (!isUpc(upcCode)) {
     reject('INVALID_UPC', 'UpcCode');
-  } else if (!hasValidCheckDigit(upcCode)) {
+  } else if (!hasValidUpcCheckDigit(upcCode)) {
     row.diagnostics.push({
       code: 'UPC_CHECKSUM',
       field: 'UpcCode',
@@ -154,7 +143,7 @@ export function reviewCatalog(contents: Buffer): CatalogReview {
 
     canonicalLines.set(originalFields, row.lineStart);
     const upc = row.sourceFields[2].trim();
-    if (!validUpc(upc)) continue;
+    if (!isUpc(upc)) continue;
     const group = upcGroups.get(upc) ?? [];
     group.push(row);
     upcGroups.set(upc, group);
