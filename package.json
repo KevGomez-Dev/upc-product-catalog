@@ -20,7 +20,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "npm run build -w api && npm test -w api",
-    "validate": "npm run lint && npm run format:check && npm run build && npm run typecheck && npm test -w api"
+    "validate": "npm run lint && npm run format:check && npm run build && npm run typecheck && npm test -w api",
+    "test:integration": "npm run build -w api && npm run test:integration -w api"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

@@ -28,12 +28,19 @@ Las justificaciones de esta tabla sintetizan el criterio técnico del plan y su 
 | Excluir reconciliación completa, UI de importación y arquitecturas adicionales. Agregar pruebas relevantes por bloque y justificar dependencias. | Reduce el alcance operativo y permite comprobar cada incremento antes de acumular cambios. |
 | Conservar los archivos originales y ajustar el esfuerzo a la hora de corte. | Mantiene el material entregado y prioriza HU-01 a HU-04 antes de extras. |
 
-Objetivo de carga por verificar en una ejecución real de HU-01: 106 productos, 1 duplicado exacto vinculado, 13 filas pendientes, 5 categorías y 17 subcategorías.
+Proyección aprobada para HU-01: 106 productos, 1 duplicado exacto vinculado, 13 filas pendientes, 5 categorías y 17 subcategorías.
 
 ## Aplicación de Codex en la base técnica
 
 - La instalación usa `.nvmrc` y un lockfile raíz. Prettier excluye el material original y la trazabilidad para evitar cambios de formato sin relación con esta fase.
 - Nest usa loopback y puerto 3000 por defecto. Next usa loopback y puerto 3001. El entorno de la API usa `.env` de raíz y el de Next usa `web/.env.local` para su origen interno opcional. El ejemplo original de JWT sigue siendo una plantilla y la API exige un secreto local apto para configurarse.
 - El data source compilado y el módulo Nest comparten opciones. El CLI carga migraciones JavaScript compiladas cuando se ejecute explícitamente. Las primeras migraciones de entidades quedaron para HU-01.
-- Se usó el runner nativo de Node para pruebas de configuración. La posible suite Jest de HU-E1 se evaluará una vez cubierto el flujo obligatorio.
+- En fase 2 se usó el runner nativo de Node para las pruebas de configuración.
 - Decisiones de detalle como revocación inmediata, borrado físico y el formato final del manifiesto se mantienen como propuestas de Codex donde el candidato no las aprobó expresamente.
+
+## HU-01 · Revisión e implementación
+
+- **Aprobado por el candidato.** La fase 3 habilita las seis entidades, migraciones explícitas, carga, pruebas con Jest y verificación en PostgreSQL real. Los 106 productos eran una expectativa con base en el análisis. [Prompt de fase 3](prompts/03-modelo-importacion.md)
+- **Implementado por Codex, pendiente de revisión.** El duplicado exacto se vincula por igualdad de los nueve campos decodificados y conserva ambos registros originales. Para la clasificación se aceptan parejas observadas inequívocas. Ante un conflicto de categoría, se comprueba la convención observada `CATEGORÍA-SUBCÓDIGO` para confirmar una pareja presente en el archivo. El mapeo desde minúsculas exige una pareja en mayúsculas confirmada.
+- **Implementado por Codex, pendiente de revisión.** La repetición del mismo SHA reproduce el resultado registrado. En un archivo con otro SHA, un UPC proyectado anteriormente queda pendiente aunque se haya eliminado o editado su producto. También quedan pendientes los choques con UPC operativos existentes. Así se preservan bajas, ediciones y datos de instalaciones previas mediante el historial y la restricción única.
+- **Aplicado por Codex.** Las cuatro comprobaciones de configuración migraron a Jest junto con los casos HU-01. Las pruebas destructivas usan un esquema temporal en la instancia aislada. [Comandos y evidencia](planes/03-modelo-importacion.md)

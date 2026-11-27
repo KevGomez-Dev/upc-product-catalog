@@ -1,10 +1,10 @@
-import assert from 'node:assert/strict';
-import { test } from 'node:test';
-import {
+require('reflect-metadata');
+const assert = require('node:assert/strict');
+const {
   readApiEnvironment,
   readDatabaseUrl,
-} from '../dist/config/environment.js';
-import { databaseOptions } from '../dist/database/database-options.js';
+} = require('../dist/config/environment.js');
+const { databaseOptions } = require('../dist/database/database-options.js');
 
 const validSecret = 'test-only-0123456789abcdef0123456789abcdef';
 const testDatabaseUrl = 'postgresql://test:test@localhost:5432/catalog_test';
