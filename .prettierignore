@@ -1,0 +1,11 @@
+.next/
+dist/
+coverage/
+next-env.d.ts
+*.tsbuildinfo
+package-lock.json
+.env*
+data/
+README.md
+ia/
+docker-compose.yml

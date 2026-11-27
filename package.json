@@ -1,0 +1,29 @@
+{
+  "name": "catalogo-productos-upc",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22.x",
+    "npm": ">=10"
+  },
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev -w api",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run build -w api && npm test -w api",
+    "validate": "npm run lint && npm run format:check && npm run build && npm run typecheck && npm test -w api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.1"
+  }
+}

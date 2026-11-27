@@ -1,0 +1,38 @@
+{
+  "name": "@catalogo/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "build": "nest build",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "migration:create": "typeorm migration:create",
+    "premigration:show": "npm run build",
+    "migration:show": "typeorm migration:show -d dist/database/data-source.js",
+    "premigration:run": "npm run build",
+    "migration:run": "typeorm migration:run -d dist/database/data-source.js",
+    "premigration:revert": "npm run build",
+    "migration:revert": "typeorm migration:revert -d dist/database/data-source.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.29",
+    "@nestjs/core": "^11.1.29",
+    "@nestjs/platform-express": "^11.1.29",
+    "@nestjs/typeorm": "^11.0.3",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typeorm": "~0.3.29"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@nestjs/cli": "^11.0.21",
+    "@types/node": "^22.19.0",
+    "eslint": "^9.39.4",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.58.0"
+  }
+}
