@@ -344,6 +344,28 @@ test('origen no autorizado y destinos fuera de la lista se rechazan', async ({
   expect((await request.get('/api/catalog/auth/me')).status()).toBe(404);
 });
 
+test('el adaptador limita JSON antes de iniciar la autenticación', async ({
+  request,
+  baseURL,
+}) => {
+  const headers = {
+    Origin: new URL(baseURL!).origin,
+    'Content-Type': 'application/json',
+  };
+  const tooLarge = await request.post('/api/session', {
+    headers,
+    data: { username: 'fixture', password: 'x'.repeat(110 * 1024) },
+  });
+  expect(tooLarge.status()).toBe(413);
+  expect((await tooLarge.json()).code).toBe('PAYLOAD_TOO_LARGE');
+  const malformed = await request.post('/api/session', {
+    headers,
+    data: '{"username":',
+  });
+  expect(malformed.status()).toBe(400);
+  expect((await malformed.json()).code).toBe('BAD_REQUEST');
+});
+
 test('el navegador vuelve al login con un JWT firmado pero vencido', async ({
   page,
   context,
