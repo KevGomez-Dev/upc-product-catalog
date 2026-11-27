@@ -75,3 +75,21 @@ El importador conserva 120 filas y proyecta 106 productos en una base limpia. Pu
 - `npm run test:e2e -w web` verifica los flujos en Playwright con la aplicación en marcha y una base de prueba recién cargada. Instala Chromium con `npm exec -w web -- playwright install chromium` o usa Chrome instalado con `E2E_BROWSER_CHANNEL=chrome`. El caso de JWT vencido requiere que `E2E_JWT_SECRET` coincida con el secreto del backend de prueba.
 
 El límite de login en memoria cuenta por IP de conexión a NestJS. Las solicitudes que pasan por una misma instancia local de Next comparten ese límite. El adaptador no reenvía cabeceras de identificación de IP del cliente.
+
+## API en Docker y healthcheck
+
+El archivo `docker-compose.api.yml` complementa al Compose del ejercicio. Con `.env` configurado y un `JWT_SECRET` generado localmente, ejecuta:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --wait db
+docker compose -f docker-compose.yml -f docker-compose.api.yml build api
+docker compose -f docker-compose.yml -f docker-compose.api.yml run --rm api npm exec -w api -- typeorm migration:run -d dist/database/data-source.js
+docker compose -f docker-compose.yml -f docker-compose.api.yml run --rm api node api/dist/catalog/import/import-cli.js load
+docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --wait api
+docker compose -f docker-compose.yml -f docker-compose.api.yml ps
+curl -i http://127.0.0.1:3000/health
+```
+
+Next sigue disponible con `npm run dev:web`. El contenedor usa el host interno `db`, publica la API solo en loopback y monta `data/` en solo lectura. Si las credenciales de PostgreSQL necesitan codificación URL, proporciona `API_DATABASE_URL` con el host interno `db` y los valores codificados. Puedes publicar otro puerto con `API_HOST_PORT` y apuntar `API_BASE_URL` del frontend a ese puerto. Fuera del contenedor, `API_HOST` permite cambiar explícitamente la dirección local de escucha, cuyo valor predeterminado es `127.0.0.1`.
+
+`GET /health` es público. Devuelve 200 con `{"status":"ok","api":"up","database":"up"}` cuando PostgreSQL responde, y 503 con `{"status":"unavailable","api":"up","database":"down"}` cuando deja de responder. Compose comprueba esta ruta. Al iniciar, la API espera una conexión funcional a PostgreSQL.
